@@ -33,6 +33,9 @@ FRAMEWORK_FILES=(
   "cog-update.sh"
   "docs/AGENT-SUPPORT.md"
   "docs/SKILL-DISTILLATION.md"
+  "WORKFLOW.md"
+  ".claude/lib/checkpoint.sh"
+  ".claude/lib/lane-classify.sh"
   ".github/MARKETPLACE.md"
   "scripts/validate-agent-surface.sh"
 
@@ -58,6 +61,51 @@ FRAMEWORK_FILES=(
   ".claude/skills/update-knowledge-base/SKILL.md"
   ".claude/skills/memory-hygiene/SKILL.md"
   ".claude/skills/content-factory/SKILL.md"
+  ".claude/skills/closed-loop/SKILL.md"
+  ".claude/skills/ultragoal/SKILL.md"
+  ".claude/skills/harvest/SKILL.md"
+  ".claude/skills/retro/SKILL.md"
+  ".claude/skills/review-cockpit/SKILL.md"
+  ".claude/skills/no-ai-slop/SKILL.md"
+  ".claude/skills/editorial-illustrations/SKILL.md"
+  ".claude/skills/data-forms/SKILL.md"
+  ".claude/skills/museum-art/SKILL.md"
+  ".claude/skills/daily-journal/SKILL.md"
+  ".claude/skills/taste-skill/SKILL.md"
+  ".claude/skills/product-ui-taste/SKILL.md"
+
+  # Skill reference files (bundled lookup material, loaded on demand)
+  ".claude/skills/closed-loop/references/report-template.html"
+  ".claude/skills/closed-loop/references/spec-template.md"
+  ".claude/skills/data-forms/references/forms.md"
+  ".claude/skills/editorial-illustrations/references/design-system.md"
+  ".claude/skills/editorial-illustrations/references/elements.md"
+  ".claude/skills/editorial-illustrations/references/worked-examples.md"
+  ".claude/skills/knowledge-consolidation/references/templates.md"
+  ".claude/skills/museum-art/references/_synthesis.md"
+  ".claude/skills/museum-art/references/artic.md"
+  ".claude/skills/museum-art/references/cleveland.md"
+  ".claude/skills/museum-art/references/getty.md"
+  ".claude/skills/museum-art/references/met.md"
+  ".claude/skills/museum-art/references/nga.md"
+  ".claude/skills/museum-art/references/rijksmuseum.md"
+  ".claude/skills/museum-art/references/smithsonian.md"
+  ".claude/skills/museum-art/references/smk.md"
+  ".claude/skills/onboarding/references/profile-templates.md"
+  ".claude/skills/onboarding/references/welcome-guide.md"
+  ".claude/skills/retro/references/retro-template.md"
+  ".claude/skills/review-cockpit/references/session-review-template.md"
+  ".claude/skills/product-ui-taste/references/block-skeletons.md"
+  ".claude/skills/product-ui-taste/references/canonical-sources.md"
+  ".claude/skills/product-ui-taste/references/install-commands.md"
+  ".claude/skills/taste-skill/references/canonical-sources.md"
+  ".claude/skills/taste-skill/references/design-systems-install.md"
+  ".claude/skills/taste-skill/references/liquid-glass.md"
+  ".claude/skills/taste-skill/references/motion-skeletons.md"
+  ".claude/skills/taste-skill/references/pattern-vocabulary.md"
+  ".claude/skills/team-brief/references/agent-prompts.md"
+  ".claude/skills/team-brief/references/brief-frontmatter.md"
+  ".claude/skills/team-brief/references/publish-templates.md"
 
   # Role packs
   ".claude/roles/_template.md"
@@ -75,6 +123,10 @@ FRAMEWORK_FILES=(
   ".claude/agents/worker-executor.md"
   ".claude/agents/worker-publisher.md"
   ".claude/agents/brief-people-updater.md"
+  ".claude/agents/task-verifier.md"
+  ".claude/agents/integration-verifier.md"
+  ".claude/agents/fix-agent.md"
+  ".claude/agents/harvest-curator.md"
 
   # People CRM
   "05-knowledge/people/README.md"
@@ -91,6 +143,52 @@ FRAMEWORK_FILES=(
   ".kiro/powers/cog-knowledge-consolidation/POWER.md"
   ".kiro/powers/cog-url-dump/POWER.md"
   ".kiro/powers/cog-update/POWER.md"
+
+  # Antigravity (agy CLI + IDE)
+  ".agents/rules/cog.md"
+  ".agents/skills/auto-research/SKILL.md"
+  ".agents/skills/braindump/SKILL.md"
+  ".agents/skills/closed-loop/SKILL.md"
+  ".agents/skills/comprehensive-analysis/SKILL.md"
+  ".agents/skills/content-factory/SKILL.md"
+  ".agents/skills/create-user-story/SKILL.md"
+  ".agents/skills/daily-brief/SKILL.md"
+  ".agents/skills/daily-journal/SKILL.md"
+  ".agents/skills/data-forms/SKILL.md"
+  ".agents/skills/editorial-illustrations/SKILL.md"
+  ".agents/skills/export-open-issues/SKILL.md"
+  ".agents/skills/generate-prd/SKILL.md"
+  ".agents/skills/generate-release-notes/SKILL.md"
+  ".agents/skills/harvest/SKILL.md"
+  ".agents/skills/knowledge-consolidation/SKILL.md"
+  ".agents/skills/loop-engineering/SKILL.md"
+  ".agents/skills/meeting-transcript/SKILL.md"
+  ".agents/skills/memory-hygiene/SKILL.md"
+  ".agents/skills/museum-art/SKILL.md"
+  ".agents/skills/no-ai-slop/SKILL.md"
+  ".agents/skills/onboarding/SKILL.md"
+  ".agents/skills/product-ui-taste/SKILL.md"
+  ".agents/skills/publish-to-confluence/SKILL.md"
+  ".agents/skills/retro/SKILL.md"
+  ".agents/skills/review-cockpit/SKILL.md"
+  ".agents/skills/scout/SKILL.md"
+  ".agents/skills/taste-skill/SKILL.md"
+  ".agents/skills/team-brief/SKILL.md"
+  ".agents/skills/ultragoal/SKILL.md"
+  ".agents/skills/update-cog/SKILL.md"
+  ".agents/skills/update-knowledge-base/SKILL.md"
+  ".agents/skills/url-dump/SKILL.md"
+  ".agents/skills/weekly-checkin/SKILL.md"
+  ".agents/agents/brief-people-updater.md"
+  ".agents/agents/worker-data-collector.md"
+  ".agents/agents/worker-executor.md"
+  ".agents/agents/worker-file-ops.md"
+  ".agents/agents/worker-publisher.md"
+  ".agents/agents/worker-researcher.md"
+  ".agents/agents/task-verifier.md"
+  ".agents/agents/integration-verifier.md"
+  ".agents/agents/fix-agent.md"
+  ".agents/agents/harvest-curator.md"
 
   # Gemini CLI
   ".gemini/commands/onboarding.toml"
@@ -113,6 +211,8 @@ FRAMEWORK_FILES=(
   ".cursor-plugin/plugin.json"
   ".cursorrules"
   "marketplace-entry.json"
+  "plugin.json"
+  "scripts/build-agent-plugin.sh"
 
   # Git infrastructure
   ".gitignore"
@@ -222,6 +322,14 @@ worktree_is_dirty() {
 warn_if_dirty() {
   if worktree_is_dirty; then
     warn "Your working tree has uncommitted changes. Framework updates are still safe, but review carefully before committing."
+  fi
+}
+
+# Regenerate the Agent Plugins standard mirror (root skills/) after framework
+# updates so it never drifts from the updated .claude/skills/.
+rebuild_agent_plugin() {
+  if [[ -x "scripts/build-agent-plugin.sh" ]]; then
+    ./scripts/build-agent-plugin.sh || warn "Agent plugin mirror rebuild failed; run ./scripts/build-agent-plugin.sh manually"
   fi
 }
 
@@ -362,6 +470,7 @@ main() {
     echo ""
     ok "Updated ${updated} file(s) to v${uv}"
     info "Backups saved as *.backup-YYYYMMDD-HHMMSS alongside originals"
+    rebuild_agent_plugin
     run_validator || true
     exit 0
   fi
@@ -440,6 +549,7 @@ main() {
   echo ""
 
   if [[ $updated -gt 0 ]]; then
+    rebuild_agent_plugin
     run_validator || true
     info "Review changes with ${BOLD}git diff${RESET}, then commit when ready:"
     echo "  git add -A && git commit -m \"Update COG framework to v${uv}\""

@@ -9,7 +9,7 @@ COG exposes 17 skills via `.claude/skills/*/SKILL.md`. Each skill has a `name` a
 
 ## Worker Agents
 
-6 worker agents live in `.claude/agents/`. Workers handle data-heavy tasks; the lead session handles reasoning and synthesis.
+10 agents live in `.claude/agents/`: 6 workers handle data-heavy tasks, 4 read-only verifiers check the result against acceptance criteria by observing the artifact. The lead session handles reasoning and synthesis.
 
 - worker-data-collector: Structured extraction from GitHub, Slack, Jira, Linear
 - worker-researcher: Web research with source citations
@@ -24,6 +24,10 @@ Before answering questions about people, projects, strategy, or decisions:
 1. Read relevant notes from `05-knowledge/` first
 2. If project-specific, read `04-projects/<project>/`
 3. Then synthesize an answer
+
+## Daily Journal
+
+Ambient, not a command. After finishing a meaningful unit of work (shipped or committed something, produced a deliverable, made a decision, hit a blocker), append one entry to `01-daily/journal/YYYY-MM-DD.md` (`date +%F`). Create the file from the template in `.claude/skills/daily-journal/SKILL.md` on the first entry of the day; append only. Skip trivia and scratch work, and do not announce the write.
 
 ## Integration Preferences
 
@@ -48,3 +52,7 @@ Check `00-inbox/MY-INTEGRATIONS.md` before using any external integration:
 
 For factual statements in durable notes, include:
 `[Source: [[path/to/note]] | YYYY-MM-DD | confidence: high|medium|low]`
+
+## Response Style (ALWAYS APPLY)
+
+Optimize for information gain, not apparent completeness. Start with the answer or strongest finding. Never invent named frameworks, gates, layers, pillars, or numbered taxonomies unless they exist in the source material. Headings name subject matter, never rhetorical function (banned: "Why this matters", "The key insight", "What this is not", "The bottom line"). No straw-man contrasts ("It's not X, it's Y") unless X is a position someone actually holds. Space proportional to importance; every paragraph must add evidence, mechanism, example, implication, or decision. Compose as finding -> evidence -> reasoning -> decision. Stop when useful information is exhausted. Full pattern list: `.claude/skills/no-ai-slop/SKILL.md` § Structural slop.
