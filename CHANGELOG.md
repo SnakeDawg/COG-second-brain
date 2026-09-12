@@ -2,6 +2,199 @@
 
 All notable changes to COG (Cognition + Obsidian + Git) will be documented in this file.
 
+## [3.12.0] - 2026-08-25
+
+### Changed
+
+#### The verification harness is opt-in, not mandated
+Reported in [#43](https://github.com/huytieu/COG-second-brain/issues/43): `CLAUDE.md` carried four **ALWAYS APPLY** sections mandating the V-model harness on every task, while `WORKFLOW.md` opened by asserting that "every non-`tiny` task walks the V." Nothing in a normal COG session does that, and a mandate no session honors teaches the model to discount every other rule in the file. The harness is good machinery for the runs that want it and pure ceremony on a braindump.
+
+- `CLAUDE.md`: the four sections (V-Model Checkpoints, Closed-Loop Execute, Risk Lanes, Ultragoal) collapse into one **Verification Harness (opt-in, off by default)**. It names the three ways to turn the harness on and states plainly that a session which never invoked it owes no checkpoints, no lane classification, and no evidence ledger. Two rules survive as always-on because they cost nothing: verification observes the artifact, and a worker never grades its own homework.
+- `WORKFLOW.md`: new **Scope: opt-in only** section at the top. The V-model text now reads "inside a harness run, every non-`tiny` task walks the V."
+- Third opt-in path: `verification_harness: on` in `00-inbox/MY-PROFILE.md` makes the `normal`-lane pipeline the default for build tasks. Absent or `off` means per-request. Added to the onboarding profile template.
+- `AGENTS.md`, `README.md`: the harness section leads with opt-in; per-skill trigger lists no longer claim the loop fires "automatically, whenever a task mutates external state".
+
+### Fixed
+
+#### Harness references that pointed at files COG never shipped
+Also from [#43](https://github.com/huytieu/COG-second-brain/issues/43): the skills instructed the model to copy templates from `04-projects/harness/templates/`, a directory that does not exist in a COG checkout, and `WORKFLOW.md` closed with an **Install** block calling `.claude/lib/install-harness.sh`, a script that does not exist either. `checkpoint.sh init` would have failed on the same missing template path.
+
+- Templates now ship with the skills, so `/update-cog` keeps them current: `closed-loop/references/spec-template.md`, `closed-loop/references/report-template.html` (self-contained, theme-aware), `retro/references/retro-template.md`, `review-cockpit/references/session-review-template.md`. All four added to the updater's framework file list.
+- `checkpoint.sh init` writes the evidence-ledger header inline instead of copying a missing file.
+- The Install block is replaced by **No install step**: the two `.claude/lib` scripts ship executable, run directories are created on demand, and COG ships no hooks. The `harvest` nightly block no longer calls the phantom installer, and the `harvest` trigger list no longer claims a SessionEnd hook stages automatically.
+- `/execute` never existed as a command; every reference now points at `/closed-loop`. `WORKFLOW.md`'s domain-routing and self-enhancement tables listed skills COG does not ship (`dogfood-release`, `aut-skill-capture`, gstack, lizard) and now list the ones it does.
+- Vault-specific leakage removed from the harness surface: the `browser-harness` Python helpers in `closed-loop`, and the `Agent(model="fable")` call shape in `WORKFLOW.md`.
+- `CLAUDE.md` said `.claude/agents/` holds 6 agents; it holds 10, and `.claude/lib/` was missing from the framework file list.
+
+## [3.11.0] - 2026-08-24
+
+### Added
+
+#### Structural slop: composition-level anti-slop rules
+Word bans catch surface slop ("delve", em dashes); the deeper LLM tell is composition — predictable rhetorical structure with low information gain. Community evidence converged on this: large-scale analyses of perceived AI writing found flat rhythm and polished-but-empty paragraphs outrank word-level tells, and recurring complaints target invented frameworks ("the gate: four decisions"), rhetorical-function headings ("What this is not", "Why this matters"), and straw-man contrasts ("It's not X, it's Y").
+
+- `no-ai-slop` skill: new **Structural slop** section — frameworkification, rhetorical-function headings, negative runway, straw-man corrections, symmetrical exposition, section scaffolding over thin content, artificial resolution, and the master check of marginal information density per paragraph. Composition order: finding → evidence → reasoning → decision, not principle → framework → exposition → takeaway.
+- `no-ai-slop` eval: six matching structural checks.
+- CLAUDE.md + .cursorrules: **Response Style (ALWAYS APPLY)** section so the rules govern every response, not only draft-editing runs (same hoisting rationale as 3.10.1 — behavioral rules cannot live only in a lazily-loaded skill).
+- All 10 agent definitions: compact Response Style block, so subagent reports follow the same composition rules as the lead.
+
+## [3.10.2] - 2026-08-18
+
+### Changed
+
+#### Oversized skill bodies split into bundled `references/`
+Everything after a skill's frontmatter loads into context the moment the skill triggers. Five SKILL.md bodies ran past the 500-line figure in the Agent Skills best-practices guidance, the largest at 87 KB, so a task that never touched the appendix material paid for it anyway. Lookup tables and document templates now live in `references/` files the model reads only when it needs them, following the shape `museum-art`, `data-forms` and `editorial-illustrations` already use.
+
+| skill | body before | body after |
+|---|---|---|
+| `knowledge-consolidation` | 870 | 293 |
+| `onboarding` | 553 | 304 |
+| `team-brief` | 886 | 473 |
+| `product-ui-taste` | 649 | 515 |
+| `taste-skill` | 1204 | 786 |
+
+Every move is verbatim. `product-ui-taste` lands just above the guideline and `taste-skill` well above it: what remains in both is live instruction rather than lookup material, and condensing it would be an editorial rewrite with real behavioral risk, not a mechanical move. Stated plainly rather than forced under the number.
+
+### Fixed
+
+#### Bundled reference files now actually ship to installed users
+`cog-update.sh` enumerates individual files in `FRAMEWORK_FILES`, and no `references/*.md` had ever been listed. The 13 files under `museum-art/references/`, `data-forms/references/` and `editorial-illustrations/references/` therefore never reached anyone who installed COG — `museum-art`'s own `## References` section pointed at files those users did not have. All 27 reference files are now registered.
+
+**Existing installs: run `./cog-update.sh` twice for this release.** Your local copy of the updater carries the old `FRAMEWORK_FILES` array, so the first run delivers the trimmed skills and the new updater but not the reference files the new array names; the second run picks them up.
+
+Reported in #29, with the measurements reproduced exactly.
+
+## [3.10.1] - 2026-08-18
+
+### Fixed
+
+#### The daily journal is actually ambient now
+`daily-journal` described itself as an automatic, passive log the agent keeps for you, but it logged nothing until you invoked it. The cause was architectural, not a missing instruction: the behavioral trigger ("append after finishing a meaningful unit of work") lived inside `SKILL.md`, and a skill body is lazily loaded, so the instruction telling the agent to act ambiently was itself locked behind the manual trigger.
+
+A behavioral trigger cannot live in a lazily loaded file. The trigger now lives on the always-loaded surfaces and the skill body keeps the procedure.
+
+- **`CLAUDE.md`** gains a `## Daily Journal (ALWAYS APPLY)` section carrying the trigger, the do-not-log list, and an explicit opt-out.
+- **`.cursorrules`** gains the same rule in its own register, since Cursor does not read `CLAUDE.md`.
+- **`AGENTS.md`** names `CLAUDE.md` as the trigger's home so the surfaces agree.
+- **`SKILL.md`** stops claiming to be its own trigger and points at where the trigger actually lives.
+- `01-daily/journal/` now ships with a `.gitkeep` so the destination exists on a fresh clone.
+
+Also fixes a dangling reference in `daily-journal`'s purpose line: it compared itself to `/daily-checkin`, which this repo does not ship. The skill is `/weekly-checkin`.
+
+Reported in #26, with the correct diagnosis.
+
+## [3.10.0] - 2026-08-07
+
+### Added
+
+#### Agent Plugins standard adoption
+COG now conforms to the [Agent Plugins specification 1.0.0](https://agent-plugins.org), the open, vendor-neutral plugin format governed by a Technical Steering Committee with representatives from Amazon, Cursor, Microsoft, OpenAI, and Vercel. Any standard-conformant client can load COG as a plugin directly from a checkout.
+
+- **`plugin.json`** at the repo root: the standard manifest, validated against the published 1.0.0 schema.
+- **`skills/`** at the repo root: generated mirror of `.claude/skills/` (the spec's fixed skill location; skills follow the [Agent Skills](https://agentskills.io) format). `.claude/skills/` stays canonical: regenerate with `./scripts/build-agent-plugin.sh`, never edit `skills/` by hand.
+- **`scripts/build-agent-plugin.sh`**: one-command mirror rebuild, wired into `cog-update.sh` so framework updates regenerate the surface automatically.
+- **Validator coverage**: `validate-agent-surface.sh` now checks the manifest declares the 1.0.0 schema, the mirror matches `.claude/skills/` exactly, and the version is aligned across all four packaging manifests.
+
+### Changed
+- Version alignment check now spans `.claude-plugin/plugin.json`, `plugin.json`, `marketplace-entry.json`, and `COG-VERSION`.
+
+## [3.9.0] - 2026-07-29
+
+### Added
+
+#### Antigravity agent format support
+A full native surface for Antigravity (agy CLI + IDE), matching Claude Code's coverage: all 33 skills and all 10 agents (6 workers + 4 verifiers).
+
+- **`.agents/skills/<name>/SKILL.md`** — one pointer stub per skill. Each stub carries the same `name`/`description` frontmatter as its Claude Code counterpart, then delegates: "Read `.claude/skills/<name>/SKILL.md` and execute it exactly as written — that file is the authoritative playbook." `.claude/skills/` stays the single source of truth; the Antigravity surface never forks the playbook content.
+- **`.agents/agents/<name>.md`** — one pointer stub per agent, same pattern. Read-only verification gates (`task-verifier`, `integration-verifier`) get accurate, non-templated pointer text rather than the generic worker "Output Rule" line, since they don't write files.
+- **`.agents/rules/cog.md`** — the Antigravity operating-policy entry point. Reads `CLAUDE.md` at the repo root and applies it, with explicit substitutions: `.claude/agents/<name>` workers → `.agents/agents/<name>.md` via `invoke_subagent`; the Model Routing table's `sonnet` → `model: flash`.
+
+### Changed
+- **Agent Support Matrix** (`README.md`, `docs/AGENT-SUPPORT.md`) now lists Antigravity as a full surface alongside Claude Code and `AGENTS.md`.
+- `cog-update.sh` `FRAMEWORK_FILES` gained all 44 `.agents/*` paths, so `/update-cog` keeps the Antigravity surface current going forward.
+- Packaging rule 2 in `docs/AGENT-SUPPORT.md` now requires updating the matching Antigravity stub whenever a Claude Code skill changes.
+
+### Known follow-up
+- `scripts/validate-agent-surface.sh` does not yet check `.agents/` parity against `.claude/skills/` — drift between the two surfaces would currently go undetected by the validator. Left out of this change to keep it scoped to adding the surface itself.
+
+## [3.8.1] - 2026-07-27
+
+### Added
+
+#### Paired anti-slop design skills (2)
+The two skills held back from v3.8.0 pending a provenance check, now confirmed original and shipped. They are a **pair with a hard boundary**, because the two surfaces fail in opposite ways and a single "make it look good" skill gets both wrong.
+
+- **`taste-skill`**: landing pages, portfolios, marketing, editorial. Most model design output is bad because it jumps to a default aesthetic instead of reading the room, so this forces a one-line **Design Read** (page kind, audience, vibe signals, existing brand assets, quiet constraints) before any code. Explicit variance/motion/density dials, real design systems where they apply, audit-first on redesigns, strict pre-flight check.
+- **`product-ui-taste`**: dashboards, data tables, forms, wizards, settings, list/detail, admin consoles, app shells. Marketing UI lives on first impression; product UI lives on the hundredth use, under real data, by someone doing a job. The failure mode is not a templated aesthetic, it is a prototype that dies on contact with real data. Forces a **Product Read** and three dials (`DENSITY`, `DATA_COMPLEXITY`, `CONSEQUENCE`), budgets the frame in pixels top-down before content, and enforces the anti-defaults: rows instead of card-soup, correct scroll ownership, sticky headers, frozen-column offsets, z-index tiers, plus the states marketing UI never has (read-only, permission-denied, plan-locked).
+
+**The boundary is the point.** `taste-skill` hands dense product UI to `product-ui-taste`; never run both on the same component. On a mixed brief (a landing page with an embedded live dashboard), `taste-skill` takes the hero and `product-ui-taste` takes the product surface.
+
+Both resolve the host design system's **real** API before writing UI rather than inventing component props, and map across Carbon, Polaris, Atlaskit, Fluent, Primer, Material 3, Radix/shadcn, and Ant.
+
+### Changed
+- **Skill count 31 → 33** across all manifests, `AGENTS.md`, `README.md`, `SETUP.md`, `.github/MARKETPLACE.md`, and `docs/AGENT-SUPPORT.md`.
+- `.gitignore` now covers harness runtime artifacts (`.claude/logs/`, `04-projects/harness/runs/`), which `checkpoint.sh` and `/execute` write per-user and which should never land in a user's commits.
+- `.github/MARKETPLACE.md` release checklist gained the three steps that were being done by hand: refresh the packaged-version line, cut a GitHub Release, re-index the directories.
+
+## [3.8.0] - 2026-07-27
+
+### The Closed-Loop Harness
+
+v3.7.0 made trust a runtime decision for stored facts and mutations. v3.8.0 asks the harder question: **who checks the checker?**
+
+The unit of work in v3.7.0 was a skill run. A skill run reports success. Nothing above it decides whether that success was real, because the only thing that ever looked at the result was the agent that produced it. That is not a verification problem, it is a *structural* one. The worker grades its own homework.
+
+v3.8.0 replaces the flat skill run with a **V-model lifecycle**. Work descends the left arm (goal → falsifiable criteria → tasks), builds at the apex, and ascends the right arm through gates that each demand **evidence traced back to a criterion ID**. A criterion with no evidence row does not ship. An evidence row with no criterion is noise. The verifier is a separate agent, read-only, with fresh context and no access to the worker's narrative. It looks at the artifact.
+
+Two ideas do most of the work:
+
+- **The worker never grades its own homework.** Verification is a different agent, observing the artifact (curl the URL, re-read the file on disk, screenshot the page), never the summary the worker wrote about it.
+- **Ceremony scales with blast radius.** Five risk lanes mean a one-line fix doesn't pay for a spec and an integration verifier, while a publish does.
+
+Closed-loop execution and the risk-lane concept are adapted from [dwarves-kit](https://github.com/dwarvesf/dwarves-kit); the V-model framing comes from SDLC practice.
+
+### Added
+
+#### New Skills: Verification Harness (5)
+- **`closed-loop`**: the execute pipeline is CP-2 plan → CP-3 build → CP-3v component verify → CP-4 integration verify → CP-5 acceptance. Dispatches a fresh-context, read-only `task-verifier`, routes `FAIL:fixable` to `fix-agent` (max 2 retries), escalates otherwise. Every verify step emits `EVIDENCE <AC-id> | <CP> | PASS|FAIL | <observation> | <artifact>`.
+- **`ultragoal`**: for goals too big to ship in one session. One spec with a north-star and `AC-n` criteria, decomposed into phases, each phase a complete closed-loop run with its own evidence bundle. A living `STATUS.md` lets a cold session resume without re-reading history. Two acceptance gates: per-phase, and a final north-star verifier that checks every criterion has a PASS row. Ultragoals never downgrade the lane, because wrongness compounds across sessions.
+- **`harvest`**: captures durable session learnings (corrections, rejected outputs, non-obvious discoveries, repeated friction) at the session boundary and **stages** them. Auto-promoting session noise into durable knowledge poisons the well, so nothing reaches `05-knowledge/` without approval.
+- **`retro`**: CP-7. Audits not just whether checkpoints passed but whether the **evidence was any good**: did each row observe an artifact, or restate a tool return value? Identifies which gates caught real problems and which were ceremony.
+- **`review-cockpit`**: one living review doc per multi-item session. Cockpit header (Progress / Working folder / Context) plus per-item cards with a **🗒 Your call** approval slot you edit in place. The doc is the interaction surface, not a summary of it.
+
+#### New Skills: Craft (5)
+- **`no-ai-slop`**: edit a draft sharper while preserving voice, or detect slop without rewriting. Guards both failure directions: leaving AI patterns in, and stripping distinctive voice out along with them. Vendored from [petergyang/no-ai-slop](https://github.com/petergyang/no-ai-slop) (MIT, with `LICENSE` and `SOURCE.md`).
+- **`editorial-illustrations`**: a generative guide, not a template gallery. Teaches the **claim → geometry** method: extract what the text argues, find where the point is, derive the right geometry from the claim's shape, then render a self-contained, theme-aware, reduced-motion-safe HTML/SVG figure with a grayscale ramp and exactly one accent.
+- **`data-forms`**: 20+ chart and diagram forms with when-to-use and failure modes, plus the encoding decisions that carry across all of them (takeaway headline, direct labels, kill the axis, highlight-and-mute, show the caveat). Style-agnostic: a repertoire, not a palette.
+- **`museum-art`**: source real public-domain artwork from museum open-access APIs (Met, Cleveland, SMK, Rijksmuseum, NGA, Art Institute of Chicago, Getty, Smithsonian) instead of AI-generated or stock imagery. Keyless recipes per institution, licensing rules included, fetched fresh so visuals don't repeat.
+- **`daily-journal`**: a passive work journal the agent keeps *for* you. Appends entries after meaningful work; the record exists even on days you'd never sit down to write one.
+
+#### New Agents (4)
+All read-only except `fix-agent`, all fresh-context, none can mutate external state:
+- **`task-verifier`** (CP-3v): checks worker output against acceptance criteria by observing the artifact.
+- **`integration-verifier`** (CP-4): cross-task wiring and global acceptance for multi-task specs.
+- **`fix-agent`**: targeted fixes after a `FAIL:fixable` verdict; implements only what the verifier flagged, max 2 attempts.
+- **`harvest-curator`** (CP-7): shapes session learnings into adoption notes; propose-only.
+
+#### New Framework Files
+- **`WORKFLOW.md`**: the V-model lifecycle covers checkpoint table, gate classes (blocking vs advisory), the evidence row contract, risk-lane checkpoint depth, the verification pipeline, and file homes for specs, evidence bundles, and retro output.
+- **`.claude/lib/checkpoint.sh`**: records checkpoint results to a run's evidence ledger.
+- **`.claude/lib/lane-classify.sh`**: classifies a task into a risk lane (`classify` for the verdict, `explain` for the reasoning).
+
+#### New Protocols in CLAUDE.md
+- **V-Model Checkpoints**: CP-1 through CP-7 with per-lane blocking rules, the two-way verification requirement, and the **cross-model flagship gate**: on high-stakes runs, overlay a flagship model that is *not* the lead's own as advisor at CP-1 and critic at CP-4/5/6. Same-family verifiers share the lead's blind spots; a different family catches a different error class.
+- **Closed-Loop Execute**: the pipeline, the five lanes, and when a verifier subagent is actually warranted. Notably: on `normal`-lane read-only work the lead verifies inline, because spawning an agent to re-read a file the lead just wrote buys nothing.
+- **Risk Lanes**: `tiny` / `normal` / `full` / `bug` / `backfill`, classified before executing.
+- **Ultragoal**: one spec, phases as full closed-loop runs, a living status ledger, two acceptance gates.
+- **Visual Verification**: UI/UX work is not verified by a DOM check. The DOM can be present and the pixels still wrong. Capture the render, *read the image*, name the discrepancy, fix it, re-capture.
+- **Delegation Cap**: delegation costs context re-establishment on both ends. Fan out only for genuinely independent, sizeable tracks; if one subagent can do it, use one.
+
+### Changed
+- **Skill count 21 → 31**, **agents 6 → 10** across `plugin.json`, `.cursor-plugin/plugin.json`, `marketplace-entry.json`, `AGENTS.md`, `README.md`, `SETUP.md`, `.cursorrules`, `.github/MARKETPLACE.md`, and `docs/AGENT-SUPPORT.md`.
+- **Model Routing table** extended with the four new agents (all Sonnet).
+- **`cog-update.sh`**: `FRAMEWORK_FILES` now covers the 10 new skills, 4 new agents, `WORKFLOW.md`, and both `.claude/lib/` scripts.
+- Version bumped to **3.8.0** across `COG-VERSION` and all manifests.
+
 ## [3.7.1] - 2026-07-10
 
 ### Added
